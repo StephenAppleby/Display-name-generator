@@ -7,3 +7,5 @@ Randomly generated names conform to this template:
 "Adjective" || "Verb" + "Adjective" || "Verb" + "Noun"
 
 The current implementation does not prevent duplicates in the first two words which could be achieved with a bit more logic, perhaps a while loop or a recursive function, however I don't feel the need to fix this as I have accomplished what I set out to do already.
+
+Please note that the word submission buttons have been deliberately disabled to prevent people adding words to the lists. The lines adding event listeners to the buttons has been commented out, all the code is still there.
