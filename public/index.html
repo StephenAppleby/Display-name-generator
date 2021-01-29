@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Display Name Generator</title>
+  <link rel="stylesheet" href="/public/style.css" type="text/css">
+</head>
+
+<body>
+  <h1>Display Name Generator</h1>
+  <h2 id="displayName">Display Name</h2>
+  <button id="rollButton">Generate</button>
+  <div id="content">
+    <div class="adjectivesContainer">
+      <div class="adjectivesForm">
+        <input type="text" id="adjectivesTextArea" placeholder="Adjective">
+        <button id="adjectivesSubmit">Submit</button>
+      </div>
+      <div id="adjectives"></div>
+    </div>
+    <div class="verbsContainer">
+      <div class="verbsForm">
+        <input type="text" id="verbsTextArea" placeholder="Verb (present continuous)">
+        <button id="verbsSubmit">Submit</button>
+      </div>
+      <div id="verbs"></div>
+    </div>
+    <div class="nounsContainer">
+      <div class="nounsForm">
+        <input type="text" id="nounsTextArea" placeholder="Noun">
+        <button id="nounsSubmit">Submit</button>
+      </div>
+      <div id="nouns"></div>
+    </div>
+  </div>
+</body>
+
+<script>
+  // document.getElementById("adjectivesSubmit").addEventListener("click", addAdjective);
+  // document.getElementById("verbsSubmit").addEventListener("click", addVerb);
+  // document.getElementById("nounsSubmit").addEventListener("click", addNoun);
+  document.getElementById("rollButton").addEventListener("click", generateName);
+
+  async function generateName () {
+    let words = [];
+    Math.random() < 0.5 ? words.push('adjectives') : words.push('verbs');
+    Math.random() < 0.5 ? words.push('adjectives') : words.push('verbs');
+    words.push('nouns');
+    Promise.all([getWord(words[0]), getWord(words[1]), getWord(words[2])])
+      .then(returnedWords => {
+        let displayName = `${returnedWords[0]} ${returnedWords[1]} ${returnedWords[2]}`;
+        document.getElementById("displayName").innerHTML = displayName;
+      })
+      .catch(err => console.log('Error in generateName:', err));
+  }
+
+  function getWord (wordType) {
+    return fetch('/wordLists/' + wordType)
+      .then(response => response.json())
+      .then(data => {
+        let randomIndex = Math.floor(Math.random() * data.length);
+        let word = data[randomIndex];
+        return word;
+      })
+  }
+
+  function addAdjective () {
+    let textArea = document.getElementById("adjectivesTextArea");
+    addWord("adjectives", textArea.value);
+    textArea.value = "";
+  }
+
+  function addVerb () {
+    let textArea = document.getElementById("verbsTextArea");
+    addWord("verbs", textArea.value);
+    textArea.value = "";
+  }
+
+  function addNoun () {
+    let textArea = document.getElementById("nounsTextArea");
+    addWord("nouns", textArea.value);
+    textArea.value = "";
+  }
+
+  async function addWord (wordType, word) {
+    if (word) {
+    await fetch('/wordLists/' + wordType, { method: 'POST', body: word });
+    loadWordList(wordType);
+    }
+  }
+
+  function loadWordList (wordType) {
+    fetch('/wordLists/' + wordType)
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        let content = '<ul>';
+        data.forEach(word => {
+          content += `<li>${word}</li>`
+        });
+        content += '</ul>'
+        document.getElementById(wordType).innerHTML = content;
+      })
+      .catch(err => console.log(err));
+  }
+  
+  function loadWordLists () {
+    loadWordList('adjectives');
+    loadWordList('verbs');
+    loadWordList('nouns');
+  }
+
+  loadWordLists();
+</script>
+
+</html>
